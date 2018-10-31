@@ -22,6 +22,9 @@ A few changes I added with respect to the other basic DDPG implementations:
 
 1. Similar to many other implementations, I found batch norm on critic tend to destabilize training, and layer norm provide a much better improvement, this is also used in openai baseline DDPG implementation.
 2. I combine the critic and actor into the same model class, and also created a internal value estimation using current network, and the gradients update for actor can thereby be directly computed.
+3. For exploration noise, I use a simple normal N(0,1) scaled by 0.3.
 
 ## How to run
 ./ddpg.py --env \<env of your choose\> --random_seed \<always good to try a few different random seeds\>
+
+For InvertedPendulum-v2, the test score is expected to reach 1000 within 2k episodes, please try a few different random seeds.
