@@ -15,5 +15,13 @@ https://github.com/openai/baselines
 
 To keep it a short implementation, I have simplify the following:
 1. I only implemented a very basic replay buffer, without any clever tricks such as priorities.
-2. I didn't implement any model load/save codes, as the training is relatively quick for simple mujoco envs such as InvertedPendulum-v2
+2. I didn't implement any model load/save codes, as the training is relatively quick for simple mujoco envs such as InvertedPendulum-v2 and InvertedDoublePendulum-v2.
 3. The tensorboard implementation only contains basic functions, I track the test performance every 100 episode as the scores during training are heavily affected by the exploration noise.
+
+A few changes I added with respect to the other basic DDPG implementations:
+
+1. Similar to many other implementations, I found batch norm on critic tend to destabilize training, and layer norm provide a much better improvement, this is also used in openai baseline DDPG implementation.
+2. I combine the critic and actor into the same model class, and also created a internal value estimation using current network, and the gradients update for actor can thereby be directly computed.
+
+## How to run
+./ddpg.py --env \<env of your choose\> --random_seed \<always good to try a few different random seeds\>
