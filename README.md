@@ -1,7 +1,7 @@
 # baseline_ddpg
 baseline DDPG implementation less than 400 lines
 
-After seeing a few sample implementation on DDPG, I have decided to implement a baseline DDPG within a single python scripts. And this is done in less than 400 lines, including (hopefully) intuitive comments. This implementation is inpired by the original DDPG paper, as well as the following github repos:
+After seeing a few sample implementation on DDPG, I have decided to implement a baseline DDPG within a single python script. And this is done in less than 400 lines, including (hopefully) intuitive comments. This implementation is inpired by the original DDPG paper, as well as the following github repos:
 
 Original DDPG paper: https://arxiv.org/pdf/1509.02971.pdf
 
