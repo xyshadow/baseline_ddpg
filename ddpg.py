@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from collections import deque
 import random
 import numpy as np
@@ -6,8 +6,7 @@ import tensorflow as tf
 import gym
 import gym.spaces
 from gym.wrappers import Monitor
-import argparse
-import pprint as pp
+import click
 
 
 ## partial update of target variables
@@ -311,13 +310,25 @@ class DDPG_agent(object):
                     sess.run(self.model.update_target_vars)
 
 ## main def
-def main(args):
+@click.command(help='basic DDPG agent')
+@click.option('--actor_lr', type=float, help='actor network learning rate', default=0.0001)
+@click.option('--critic_lr', type=float, help='critic network learning rate', default=0.001)
+@click.option('--gamma', type=float, help='reward discount', default=0.99)
+@click.option('--tau', type=float, help='soft target update parameter', default=0.001)
+@click.option('--buffer_size', type=int, help='max size of the replay buffer', default=1000000)
+@click.option('--batch_size', type=int, help='size of minibatch', default=64)
+# run parameters
+@click.option('--env', type=str, help='gym env', default='InvertedPendulum-v2')
+@click.option('--random_seed', type=int, help='random seed', default=1234)
+@click.option('--max_ep', type=int, help='max num of episodes', default=50000)
+@click.option('--summary_dir', type=str, help='summary directory', default='./results/tf_ddpg')
+def main(actor_lr,critic_lr,gamma,tau,buffer_size,batch_size,env,random_seed,max_ep,summary_dir):
     ## args come from argparse
     ## create single env    
-    env = gym.make(args['env'])
-    np.random.seed(int(args['random_seed']))
-    tf.set_random_seed(int(args['random_seed']))
-    env.seed(int(args['random_seed']))
+    env = gym.make(env)
+    np.random.seed(random_seed)
+    tf.set_random_seed(random_seed)
+    env.seed(random_seed)
 
     ob_dim = env.observation_space.shape[0]
     ac_dim = env.action_space.shape[0]
@@ -326,20 +337,20 @@ def main(args):
     ## define a model
     model = Model(ob_dim=ob_dim,
                   ac_dim=ac_dim,
-                  tau=args['tau'],
-                  critic_lr=args['critic_lr'],
-                  actor_lr=args['actor_lr'],
-                  batch_size=args['batch_size'],
-                  gamma=args['gamma'])
+                  tau=tau,
+                  critic_lr=critic_lr,
+                  actor_lr=actor_lr,
+                  batch_size=batch_size,
+                  gamma=gamma)
     
 
     ## ddpg agent
     agent = DDPG_agent(env=env,
                        model=model,
                        noise=NormalNoise(ac_dim),
-                       replay_buf=ReplayBuffer(int(args['buffer_size']), int(args['random_seed'])),
-                       gamma=args['gamma'],
-                       log_dir=args['summary_dir'],
+                       replay_buf=ReplayBuffer(buffer_size, random_seed),
+                       gamma=gamma,
+                       log_dir=summary_dir,
                        ac_bound=ac_bound)
     
     ## initilise
@@ -347,32 +358,12 @@ def main(args):
     config.gpu_options.allow_growth=True        
     with tf.Session(config=config) as sess:
         ## train agent
-        agent.train(sess=sess,max_ep=args['max_ep'],batch_size=args['batch_size'],ac_bound=ac_bound)
+        agent.train(sess=sess,max_ep=max_ep,batch_size=batch_size,ac_bound=ac_bound)
 
                     
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description='basic DDPG agent')
-    
-    # agent parameters
-    parser.add_argument('--actor_lr', type=float, help='actor network learning rate', default=0.0001)
-    parser.add_argument('--critic_lr', type=float, help='critic network learning rate', default=0.001)
-    parser.add_argument('--gamma', type=float, help='reward discount', default=0.99)
-    parser.add_argument('--tau', type=float, help='soft target update parameter', default=0.001)
-    parser.add_argument('--buffer_size', type=float, help='max size of the replay buffer', default=1000000)
-    parser.add_argument('--batch_size', type=float, help='size of minibatch', default=64)
-
-    # run parameters
-    parser.add_argument('--env', type=str, help='gym env', default='InvertedPendulum-v2')
-    parser.add_argument('--random_seed', type=int, help='random seed', default=12345)
-    parser.add_argument('--max_ep', type=int, help='max num of episodes', default=50000)
-    parser.add_argument('--summary_dir', type=str, help='summary directory', default='./results/tf_ddpg')
-
-    args = vars(parser.parse_args())
-    
-    pp.pprint(args)
-
-    main(args)
+    main()
                        
                 
                     
